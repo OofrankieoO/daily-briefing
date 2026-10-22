@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import sys
 import urllib.request
 from datetime import date
@@ -99,6 +100,27 @@ def strip_code_fence(text: str) -> str:
     return "\n".join(lines).strip()
 
 
+SECTION_RE = re.compile(r"^#{1,6}\s*[（(]?\s*(国内|国外)\s*[）)]?\s*(?:新闻|板块)?\s*[：:]?$")
+
+
+def normalize_sections(text: str) -> str:
+    """把 ##国内 / ##（国内）/ ### 国内新闻 之类统一成 ## 国内 / ## 国外，并保证标题前有空行。"""
+    lines: list[str] = []
+    for line in text.splitlines():
+        match = SECTION_RE.match(line.strip())
+        if not match:
+            lines.append(line)
+            continue
+
+        while lines and not lines[-1].strip():
+            lines.pop()
+        if lines:
+            lines.append("")
+        lines.append(f"## {match.group(1)}")
+
+    return "\n".join(lines).strip()
+
+
 def render_report(news_date: str, body: str) -> str:
     """拼出最终文件内容：标题 + 来源 + 简报正文，不加任何多余内容。"""
     return (
@@ -122,7 +144,7 @@ def main() -> int:
     if not news:
         raise RuntimeError("接口没有返回任何新闻")
 
-    body = strip_code_fence(summarize(news))
+    body = normalize_sections(strip_code_fence(summarize(news)))
     path = write_report(news_date, render_report(news_date, body))
 
     if hasattr(sys.stdout, "reconfigure") and not sys.stdout.isatty():
