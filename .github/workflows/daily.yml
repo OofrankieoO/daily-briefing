@@ -1,11 +1,12 @@
 name: 每日热点简报
 
-# GitHub Actions 的 cron 一律按 UTC 解释。
-# 北京时间每天 08:00 = UTC 00:00。
+# 【已停止自动运行】2026-11-02
+# 原来的定时触发（GitHub cron 按 UTC 解释，北京时间每天 08:00 = UTC 00:00）
+# 已被注释掉，工作流不会再自己跑。要恢复，取消下面两行注释并 push 即可。
 on:
-  schedule:
-    - cron: "0 0 * * *"
-  workflow_dispatch: # 手动触发，方便第一次测试
+  # schedule:
+  #   - cron: "0 0 * * *"
+  workflow_dispatch: # 仅保留手动触发：Actions 页面点 Run workflow 才会运行
 
 # push 回仓库需要写权限（GITHUB_TOKEN 默认只读）
 permissions:
